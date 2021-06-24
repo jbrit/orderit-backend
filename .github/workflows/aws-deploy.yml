@@ -2,7 +2,7 @@ name: "Deploy to AWS"
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
 
   workflow_dispatch:
 
@@ -23,9 +23,7 @@ jobs:
           instance-ids: ${{ secrets.INSTANCE_ID }}
 
           # working-directory: /home/ubuntu/application
-          command: ls -al
-          command: pwd
-          command: ./deploy.sh
+          command: ls -al && pwd && ./deploy.sh
 
       # Catch SSM outputs
       - name: Get the outputs
