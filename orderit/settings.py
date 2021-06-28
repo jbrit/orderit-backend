@@ -18,6 +18,8 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'vauth',
+    'rest_framework',
+    'drf_spectacular',
 ]
 
 MIDDLEWARE = [
@@ -95,4 +97,16 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "vauth.User"
 
-# AUTHENTICATION_BACKENDS = ['vauth.EmailBackend']
+REST_FRAMEWORK = {
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+    ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
+}
+
+# API DOCS SETTINGS
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'OrderIt API',
+    'DESCRIPTION': 'OrderIt Backend',
+    'VERSION': '1.0.0',
+}
