@@ -109,4 +109,5 @@ SPECTACULAR_SETTINGS = {
     'TITLE': 'OrderIt API',
     'DESCRIPTION': 'OrderIt Backend',
     'VERSION': '1.0.0',
+    'SCHEMA_PATH_PREFIX': '/api',
 }
