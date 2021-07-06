@@ -72,7 +72,7 @@ class PasswordResetSerializer(serializers.Serializer):
         #     raise serializers.ValidationError(self.reset_form.errors)
         user = User.objects.filter(email__exact=self.initial_data['email'])
         if not user.exists():
-            raise serializers.ValidationError("BAD REQUEST")
+            raise serializers.ValidationError("This user doesn't exist")
         return value
 
 
