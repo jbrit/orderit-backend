@@ -105,6 +105,7 @@ REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
+    'EXCEPTION_HANDLER': 'vauth.utils.custom_exception_handler',
 }
 
 # API DOCS SETTINGS
@@ -114,3 +115,5 @@ SPECTACULAR_SETTINGS = {
     'VERSION': '1.0.0',
     'SCHEMA_PATH_PREFIX': '/api',
 }
+
+EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'

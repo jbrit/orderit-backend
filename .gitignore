@@ -43,3 +43,6 @@ venv/
 
 # pg data volume
 data/
+
+#pycharm
+.idea
