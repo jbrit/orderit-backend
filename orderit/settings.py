@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -5,7 +6,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-qlngzhdk=+5vf8htpwq8a^o*f05de2^8x04b14!yzs+yp2y8kg'
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ["*"]
 
@@ -117,3 +118,13 @@ SPECTACULAR_SETTINGS = {
 }
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+# Production settings
+# TODO: Manage env later
+if not DEBUG:
+    EMAIL_HOST="smtp.mailgun.com"
+    EMAIL_USE_TLS = True
+    EMAIL_PORT = 587
+    EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER","")
+    EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD","")
+    EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'

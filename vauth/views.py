@@ -73,10 +73,7 @@ class AccountActivation(APIView):
             user.save()
             return Response(data={"message": "Your account has been activated"}, status=status.HTTP_200_OK)
         return Response(data={"message": "Invalid or used token"}, status=status.HTTP_400_BAD_REQUEST)
-        #     return HttpResponse("<p>Your account has been activated.</p>")
-        # return HttpResponse("<p>The confirmation link was invalid, possibly because it has already been used.</p>")
-
-
+       
 class ChangePasswordView(GenericAPIView):
     """
     User Password Change View
