@@ -26,9 +26,9 @@ pylint:
       codequality: codeclimate.json
     when: always
     
-  unittest:
-    stage: test
-    script: python manage.py test
+#  unittest:
+#    stage: test
+#    script: python manage.py test
     
   api-test:
     stage: test
