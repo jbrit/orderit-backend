@@ -131,3 +131,4 @@ if DEBUG:
     EMAIL_HOST_USER = os.environ.get("EMAIL_HOST_USER","")
     EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD","")
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
+    DEFAULT_FROM_EMAIL = "'OrderIt Team' <no-reply-orderit@jbritz.tech>"
