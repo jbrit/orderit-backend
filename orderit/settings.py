@@ -9,7 +9,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 
 SECRET_KEY = 'django-insecure-qlngzhdk=+5vf8htpwq8a^o*f05de2^8x04b14!yzs+yp2y8kg'
 
-DEBUG = False
+DEBUG = True
 
 ALLOWED_HOSTS = ["*"]
 
@@ -124,7 +124,7 @@ EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Production settings
 # TODO: Manage env later
-if not DEBUG:
+if DEBUG:
     EMAIL_HOST="smtp.mailgun.com"
     EMAIL_USE_TLS = True
     EMAIL_PORT = 587
