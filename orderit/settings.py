@@ -120,6 +120,10 @@ SPECTACULAR_SETTINGS = {
     'SCHEMA_PATH_PREFIX': '/api',
 }
 
+CLIENT_APP_URL = "https://orderit-lmu.vercel.app"
+PASSWORD_RESET_URL = f"{CLIENT_APP_URL}/reset-password"
+VERIFICATION_URL = f"{CLIENT_APP_URL}/verify/"
+
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 # Production settings

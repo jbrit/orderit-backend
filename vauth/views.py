@@ -14,6 +14,10 @@ from django.utils.encoding import force_bytes, force_text
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.contrib.sites.shortcuts import get_current_site
 from .tokens import account_activation_token, password_reset_token
+from django.conf import settings
+
+VERIFICATION_URL = settings.VERIFICATION_URL
+PASSWORD_RESET_URL = settings.PASSWORD_RESET_URL
 
 User = get_user_model()
 
@@ -45,6 +49,7 @@ class RegisterUserView(GenericAPIView):
                 'domain': current_site.domain,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': account_activation_token.make_token(user),
+                'url': VERIFICATION_URL
             })
             user.email_user(subject, message)
             data = {"message": "Please check your email to verify your account"}
@@ -61,7 +66,7 @@ class AccountActivation(APIView):
 
     def get(self, request, *args, **kwargs):
         try:
-            uidb64 = kwargs.get('uidb64')
+            uidb64 = kwargs.get('uid')
             token = kwargs.get('token')
             uid = force_text(urlsafe_base64_decode(uidb64))
             user = User.objects.get(pk=uid)
@@ -109,6 +114,7 @@ class PasswordResetView(GenericAPIView):
                 'domain': current_site.domain,
                 'uid': urlsafe_base64_encode(force_bytes(user.pk)),
                 'token': password_reset_token.make_token(user),
+                'url': PASSWORD_RESET_URL
             })
             user.email_user(subject, message)
             data = {"message": "Please check your email to reset your password"}
