@@ -11,7 +11,7 @@ from wallet.views import (
 app_name = "wallet"
 
 urlpatterns = [
-    path("", WalletListView.as_view(), name="wallets"),
+    path("list/", WalletListView.as_view(), name="wallets"),
     path("my-wallet/", WalletDetailView.as_view(), name="my_wallet"),
     path("wallet-transaction/", WalletTransactionView.as_view(), name="wallet_transaction"),
     path("transactions/", TransactionsListView.as_view(), name="transactions"),
