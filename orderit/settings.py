@@ -22,6 +22,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'vauth',
+    'wallet',
     'rest_framework',
     'drf_spectacular',
 ]
@@ -103,13 +104,13 @@ AUTH_USER_MODEL = "vauth.User"
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticated'
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    'EXCEPTION_HANDLER': 'vauth.utils.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'utilities.exception_handler.custom_exception_handler',
 }
 
 # API DOCS SETTINGS
@@ -125,6 +126,8 @@ PASSWORD_RESET_URL = f"{CLIENT_APP_URL}/reset-password"
 VERIFICATION_URL = f"{CLIENT_APP_URL}/verify/"
 
 EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY")
 
 # Production settings
 # TODO: Manage env later

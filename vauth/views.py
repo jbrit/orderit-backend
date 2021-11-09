@@ -63,7 +63,7 @@ class AccountActivation(APIView):
     therefore user's account is activated
     """
     permission_classes = [permissions.AllowAny]
-
+    serializer_class = None
     def get(self, request, *args, **kwargs):
         try:
             uidb64 = kwargs.get('uid')
