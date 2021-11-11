@@ -7,7 +7,7 @@ dotenv.load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-qlngzhdk=+5vf8htpwq8a^o*f05de2^8x04b14!yzs+yp2y8kg'
+SECRET_KEY = os.environ.get('SECRET_KEY')
 
 DEBUG = True
 
@@ -64,7 +64,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        # 'HOST': 'db',
+        'HOST': 'db',
         'PORT': 5432,
     }
 }
@@ -125,7 +125,6 @@ CLIENT_APP_URL = "https://orderit-lmu.vercel.app"
 PASSWORD_RESET_URL = f"{CLIENT_APP_URL}/reset-password"
 VERIFICATION_URL = f"{CLIENT_APP_URL}/verify/"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
 
 PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY")
 
