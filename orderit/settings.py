@@ -25,9 +25,11 @@ INSTALLED_APPS = [
     'wallet',
     'rest_framework',
     'drf_spectacular',
+    'corsheaders',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -139,3 +141,9 @@ if DEBUG:
     EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD","")
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     DEFAULT_FROM_EMAIL = "'OrderIt Team' <no-reply-orderit@jbritz.tech>"
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+
+import django_heroku
+django_heroku.settings(locals())
