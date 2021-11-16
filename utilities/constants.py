@@ -2,6 +2,7 @@ TRANSACTION_TYPES = (
     ("EW", "External to Wallet"),
     ("WE", "Wallet to External"),
     ("WW", "Wallet to Wallet"),
+    ("WO", "Wallet to Order")
 )
 
 
@@ -38,6 +39,7 @@ class ErrorMessages:
     UserAlreadyAuthenticated = "The account has already been authenticated."
     InvalidWalletType = "Invalid wallet type provided."
     InvalidChoiceOption = "Invalid value provided '%s'. Allowed options are %s."
+    WalletNotFound = "The user's wallet was not found."
 
 
 class OrderItExceptions:

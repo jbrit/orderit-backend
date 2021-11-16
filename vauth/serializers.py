@@ -4,16 +4,21 @@ from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
-from.tokens import password_reset_token
+from vauth.tokens import password_reset_token
+from wallet.serializers import WalletSerializer
 
 User = get_user_model()
 
 
 class RegisterUserSerializer(serializers.ModelSerializer):
 
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    confirm_password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
-    
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
+    confirm_password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
+
     def validate_confirm_password(self, value):
         """
         Check that the passwords are the same.
@@ -24,38 +29,46 @@ class RegisterUserSerializer(serializers.ModelSerializer):
         return value
 
     def create(self, validated_data):
-        user = User.objects.create_user(validated_data['email'], validated_data['password'])
+        user = User.objects.create_user(
+            validated_data["email"], validated_data["password"]
+        )
         return user
-    
+
     class Meta:
         model = User
-        fields = ['email', 'password', 'confirm_password']
+        fields = ["email", "password", "confirm_password"]
 
 
 class ChangePasswordSerializer(serializers.ModelSerializer):
-    password = serializers.CharField(write_only=True, required=True, validators=[validate_password])
+    password = serializers.CharField(
+        write_only=True, required=True, validators=[validate_password]
+    )
     password2 = serializers.CharField(write_only=True, required=True)
     old_password = serializers.CharField(write_only=True, required=True)
 
     class Meta:
         model = User
-        fields = ('old_password', 'password', 'password2')
+        fields = ("old_password", "password", "password2")
 
     def validate(self, attrs):
-        if attrs['password'] != attrs['password2']:
-            raise serializers.ValidationError({"password": "Password fields didn't match."})
+        if attrs["password"] != attrs["password2"]:
+            raise serializers.ValidationError(
+                {"password": "Password fields didn't match."}
+            )
 
         return attrs
 
     def validate_old_password(self, value):
         user = self.instance
         if not user.check_password(value):
-            raise serializers.ValidationError({"old_password": "Old password is not correct"})
+            raise serializers.ValidationError(
+                {"old_password": "Old password is not correct"}
+            )
         return value
 
     def update_password(self):
 
-        self.instance.set_password(self.validated_data['password'])
+        self.instance.set_password(self.validated_data["password"])
         self.instance.save()
 
         return self.instance
@@ -70,7 +83,7 @@ class PasswordResetSerializer(serializers.Serializer):
         # self.reset_form = self.password_reset_form_class(data=self.initial_data)
         # if not self.reset_form.is_valid():
         #     raise serializers.ValidationError(self.reset_form.errors)
-        user = User.objects.filter(email__exact=self.initial_data['email'])
+        user = User.objects.filter(email__exact=self.initial_data["email"])
         if not user.exists():
             raise serializers.ValidationError("This user doesn't exist")
         return value
@@ -80,6 +93,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     """
     Serializer for requesting a password reset e-mail.
     """
+
     new_password1 = serializers.CharField(max_length=128)
     new_password2 = serializers.CharField(max_length=128)
     uid = serializers.CharField()
@@ -92,10 +106,10 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     def validate(self, attrs):
         # Decode the uidb64 to uid to get User object
         try:
-            uid = force_text(urlsafe_base64_decode(attrs['uid']))
+            uid = force_text(urlsafe_base64_decode(attrs["uid"]))
             self.user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
-            raise serializers.ValidationError({'uid': ['Invalid value']})
+            raise serializers.ValidationError({"uid": ["Invalid value"]})
 
         # Construct SetPasswordForm instance
         self.set_password_form = self.set_password_form_class(
@@ -103,10 +117,25 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
         )
         if not self.set_password_form.is_valid():
             raise serializers.ValidationError(self.set_password_form.errors)
-        if not password_reset_token.check_token(self.user, attrs['token']):
-            raise serializers.ValidationError({'token': ['Invalid value']})
+        if not password_reset_token.check_token(self.user, attrs["token"]):
+            raise serializers.ValidationError({"token": ["Invalid value"]})
 
         return attrs
 
     def save(self):
         return self.set_password_form.save()
+
+
+class UserSerializer(serializers.ModelSerializer):
+    wallet = serializers.SerializerMethodField()
+    class Meta:
+        model = User
+        fields = [
+            "id", 
+            "email", 
+            "first_name", 
+            "last_name", 
+            "wallet"
+        ]
+    def get_wallet(self, obj):
+        return WalletSerializer(obj.wallet_set.first()).data

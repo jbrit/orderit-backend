@@ -1,6 +1,6 @@
 from rest_framework import status
 from rest_framework.views import APIView
-from rest_framework.permissions import IsAdminUser
+from rest_framework.permissions import IsAdminUser, IsAuthenticated
 from rest_framework.generics import GenericAPIView, ListAPIView
 from rest_framework.response import Response
 
@@ -42,6 +42,7 @@ class TransactionsListView(ListAPIView):
 class PaystackCallbackView(APIView):
     serializer_class = PaystackCallbackSerializer
     queryset = None
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -54,6 +55,7 @@ class PaystackCallbackView(APIView):
 
 class WalletTransactionView(APIView):
     serializer_class = WalletTransactionSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(
@@ -69,6 +71,7 @@ class WalletTransactionView(APIView):
 
 class PaystackCardChargeView(APIView):
     serializer_class = CardSerializer
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, *args, **kwargs):
         serializer = self.serializer_class(data=request.data)

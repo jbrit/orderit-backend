@@ -12,7 +12,7 @@ from vauth.models import User
 # Create your models here.
 
 class Transaction(models.Model):
-    payment_type = models.CharField(max_length=2, choices=TRANSACTION_TYPES)
+    transaction_type = models.CharField(max_length=2, choices=TRANSACTION_TYPES)
 
     source = models.ForeignKey(
         "PaymentEntity", related_name="source", on_delete=models.PROTECT, null=True
@@ -80,6 +80,50 @@ class Wallet(PaymentEntity):
             for transaction in all_transaction_to_wallet
         ]
 
+    def get_wallet_inbound_transactions(self):
+        
+        all_transaction_to_wallet = Transaction.objects.filter(
+            destination=self,
+            transaction_type="WW",
+        )
+        return [
+            transaction
+            for transaction in all_transaction_to_wallet
+        ]
+
+    def get_wallet_outbound_transactions(self):
+        
+        all_transaction_to_wallet = Transaction.objects.filter(
+            source=self,
+            transaction_type="WW",
+        )
+        return [
+            transaction
+            for transaction in all_transaction_to_wallet
+        ]
+
+    def get_order_transactions(self):
+        
+        all_transaction_to_wallet = Transaction.objects.filter(
+            source=self,
+            transaction_type="WO",
+        )
+        return [
+            transaction
+            for transaction in all_transaction_to_wallet
+        ]
+
+    def get_top_up_transactions(self):
+        
+        all_transaction_to_wallet = Transaction.objects.filter(
+            destination=self,
+            transaction_type="EW",
+        )
+        return [
+            transaction
+            for transaction in all_transaction_to_wallet
+        ]
+
     def get_wallet_balance(self):
         if len(self.get_inbound_transactions()) == 0 and len(self.get_outbound_transactions()) == 0:
             return 0.0
@@ -96,6 +140,38 @@ class Wallet(PaymentEntity):
         
         return total_inbound_transactions - total_outbound_transactions
 
+    def get_amount_received(self):
+        if len(self.get_wallet_inbound_transactions()) == 0:
+            return 0.0
+        total_wallet_inbound_transactions = reduce(
+                lambda x, y: x + y,
+                [transaction.amount for transaction in self.get_wallet_inbound_transactions()],
+                0
+            )
+        return total_wallet_inbound_transactions
+
+    def get_amount_sent(self):
+        if len(self.get_wallet_outbound_transactions()) == 0:
+            return 0.0
+        total_wallet_outbound_transactions = reduce(
+                lambda x, y: x + y,
+                [transaction.amount for transaction in self.get_wallet_outbound_transactions()],
+                0
+            )
+        return total_wallet_outbound_transactions
+
+    def get_amount_spent(self):
+        """
+        This should be money spent on food ordered by the user.
+        """
+        if len(self.get_order_transactions()) == 0:
+            return 0.0
+        total_order_transactions = reduce(
+                lambda x, y: x + y,
+                [transaction.amount for transaction in self.get_order_transactions()],
+                0
+            )
+        return total_order_transactions
 
     @property
     def balance(self):
@@ -103,6 +179,27 @@ class Wallet(PaymentEntity):
         This returns the life-time amount balance of the account in the wallet
         """
         return self.get_wallet_balance()
+    
+    @property
+    def amount_spent(self):
+        """
+        This returns the life-time amount spent of the account in the wallet
+        """
+        return self.get_amount_spent()
+
+    @property
+    def amount_received(self):
+        """
+        This returns the life-time amount received of the account in the wallet
+        """
+        return self.get_amount_received()
+    
+    @property
+    def amount_sent(self):
+        """
+        This returns the life-time amount sent of the account in the wallet
+        """
+        return self.get_amount_sent()
 
 @receiver(post_save, sender=User)
 def update_user_profile(sender, instance, created, **kwargs):

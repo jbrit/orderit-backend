@@ -10,6 +10,13 @@ PAYSTACK_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
 def verify_payment(request, reference):
     wallet = Wallet.objects.get(user=request.user)
 
+    if transactionExists(reference):
+
+        return (
+            "Transaction already exists.",
+            status.HTTP_400_BAD_REQUEST
+        )
+
     url = f"https://api.paystack.co/transaction/verify/{reference}"
     headers = {
         "Authorization": "Bearer " + PAYSTACK_SECRET_KEY,
@@ -25,7 +32,7 @@ def verify_payment(request, reference):
         )
         payment_entity.save()
         transaction = Transaction(
-            payment_type="EW",
+            transaction_type="EW",
             user=wallet.user,
             source=payment_entity,
             destination=wallet,
@@ -81,7 +88,7 @@ def charge_card(payload, wallet_id):
 
         transaction = Transaction(
             destination=wallet,
-            payment_type="EW",
+            transaction_type="EW",
             user=wallet.user,
             source=payment_entity,
             status=r["data"]["status"],
@@ -100,3 +107,10 @@ def charge_card(payload, wallet_id):
             message = "Transaction Failed", status.HTTP_404_NOT_FOUND
         transaction.save()
         return message
+
+def transactionExists(reference):
+    transaction = Transaction.objects.filter(reference=reference)
+    if transaction.exists():
+        return True
+    else:
+        return False
