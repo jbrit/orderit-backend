@@ -57,6 +57,7 @@ class MakeOrderView(GenericAPIView):
     """
     Makes an order for the requesting user.
     The user can order items or meals.
+    A reference to the payment for the intended order is also required to make the order.
     """
     serializer_class = MakeOrderSerializer
     permission_classes = [IsAuthenticated]
