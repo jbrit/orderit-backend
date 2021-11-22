@@ -146,5 +146,5 @@ if DEBUG:
 CORS_ORIGIN_ALLOW_ALL = True
 
 
-# import django_heroku
-# django_heroku.settings(locals())
+import django_heroku
+django_heroku.settings(locals())
