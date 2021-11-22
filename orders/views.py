@@ -12,18 +12,29 @@ from orders.serializers import (
 )
 # Create your views here.
 class ItemListView(ListAPIView):
+    """
+    Lists all the food items available.
+    """
     serializer_class = ItemSerializer
     permission_classes = []
     queryset = ItemSerializer.Meta.model.objects.all()
 
 
 class MealListView(ListAPIView):
+    """
+    Lists all the meals available.
+    Meals are made up of items available.
+    """
     serializer_class = MealSerializer
     permission_classes = []
     queryset = MealSerializer.Meta.model.objects.all()
 
 
 class OrderListView(ListAPIView):
+    """
+    Lists all the orders made by the requesting user. 
+    If the user is a superuser, a list of all orders is returned.
+    """
     serializer_class = OrderSerializer
     permission_classes = [IsAuthenticated]
     queryset = OrderSerializer.Meta.model.objects.all()
@@ -43,6 +54,10 @@ class OrderListView(ListAPIView):
 
 
 class MakeOrderView(GenericAPIView):
+    """
+    Makes an order for the requesting user.
+    The user can order items or meals.
+    """
     serializer_class = MakeOrderSerializer
     permission_classes = [IsAuthenticated]
 

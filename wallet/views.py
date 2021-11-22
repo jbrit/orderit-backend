@@ -16,12 +16,20 @@ from wallet.serializers import (
 
 # Create your views here.
 class WalletListView(ListAPIView):
+    """
+    List all wallets available.
+    """
+
     serializer_class = WalletSerializer
     queryset = WalletSerializer.Meta.model.objects.all()
     permission_classes = [IsAdminUser]
 
 
 class WalletDetailView(GenericAPIView):
+    """
+    Returns the details of the requesting user's wallet.
+    """
+
     serializer_class = WalletSerializer
     queryset = WalletSerializer.Meta.model.objects.all()
 
@@ -35,6 +43,11 @@ class WalletDetailView(GenericAPIView):
 
 
 class TransactionsListView(ListAPIView):
+    """
+    Lists all the transactions made by the user.
+    If the user is a superuser, a list of all transactions is returned.
+    """
+
     serializer_class = TransactionSerializer
     queryset = TransactionSerializer.Meta.model.objects.all()
     permission_classes = [IsAuthenticated]
@@ -55,6 +68,10 @@ class TransactionsListView(ListAPIView):
 
 
 class PaystackCallbackView(APIView):
+    """
+    This view handles the callback from Paystack for payment verification.
+    """
+
     serializer_class = PaystackCallbackSerializer
     queryset = None
     permission_classes = [IsAuthenticated]
@@ -69,6 +86,10 @@ class PaystackCallbackView(APIView):
 
 
 class WalletTransactionView(APIView):
+    """
+    This view handles the transaction of money from one wallet to another.
+    """
+
     serializer_class = WalletTransactionSerializer
     permission_classes = [IsAuthenticated]
 
@@ -85,6 +106,10 @@ class WalletTransactionView(APIView):
 
 
 class PaystackCardChargeView(APIView):
+    """
+    This view handles payment from a debit card using PaystackAPI.
+    """
+
     serializer_class = CardSerializer
     permission_classes = [IsAuthenticated]
 
