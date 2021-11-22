@@ -1,7 +1,7 @@
-from utilities.constants import ErrorMessages
 from rest_framework import serializers
 
-from utilities.exceptions import NotFoundError
+from utilities.constants import ErrorMessages
+from utilities.exceptions import BadRequestError, NotFoundError
 from utilities.paystack import verify_payment
 from utilities.transaction import create_ref_code
 from wallet.models import PaymentEntity, Transaction, Wallet
@@ -78,6 +78,8 @@ class WalletTransactionSerializer(serializers.Serializer):
         except Wallet.DoesNotExist:
             raise NotFoundError(ErrorMessages.WalletNotFound)
         amount = validated_data.get("amount")
+        if source.balance < float(amount):
+            raise BadRequestError(ErrorMessages.InsufficientBalance)
         Transaction(
             transaction_type="WW",
             source=source,

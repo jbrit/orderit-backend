@@ -7,7 +7,7 @@ from wallet.models import PaymentEntity, Wallet, Transaction
 PAYSTACK_SECRET_KEY = settings.PAYSTACK_SECRET_KEY
 
 
-def verify_payment(request, reference):
+def verify_payment(request, reference, transaction_type="EW"):
     wallet = Wallet.objects.get(user=request.user)
 
     if transactionExists(reference):
@@ -32,16 +32,21 @@ def verify_payment(request, reference):
         )
         payment_entity.save()
         transaction = Transaction(
-            transaction_type="EW",
+            transaction_type=transaction_type,
             user=wallet.user,
-            source=payment_entity,
-            destination=wallet,
             amount=r["data"]["amount"] / 100,
             total_amount=r["data"]["amount"] / 100,
             status=r["data"]["status"],
             api_id=r["data"]["id"],
             reference=r["data"]["reference"],
         )
+        if transaction_type == "EW":
+            transaction.source=payment_entity,
+            transaction.destination=wallet,
+        if transaction_type == "WO":
+            transaction.destination=payment_entity,
+            transaction.source=wallet,
+
         if r["data"]["status"] == "success":
             transaction.paid_at = datetime.fromisoformat(
                 r["data"]["paid_at"][:-1] + "+00:00"
@@ -51,7 +56,7 @@ def verify_payment(request, reference):
                 status.HTTP_200_OK,
             )
         else:
-            result = "Payment was abandoned", status.HTTP_200_OK
+            result = "Payment was abandoned", status.HTTP_200_OK, transaction
         try:
             transaction.save()
         except:
@@ -114,3 +119,5 @@ def transactionExists(reference):
         return True
     else:
         return False
+
+#TODO Create view for verifying failed payment verifications

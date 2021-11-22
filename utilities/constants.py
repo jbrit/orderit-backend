@@ -5,6 +5,19 @@ TRANSACTION_TYPES = (
     ("WO", "Wallet to Order")
 )
 
+CATEGORIES = (
+    ("S", "Swallow"),
+    ("D", "Drinks and Beverages"),
+    ("G", "Garnish"),
+    ("M", "Main Dish"),
+    ("F", "Fruits")
+)
+
+STATUSES = (
+    ("P", "Pending"),
+    ("A", "Accepted"),
+    ("S", "Served")
+)
 
 class ErrorMessages:
     """
@@ -40,6 +53,7 @@ class ErrorMessages:
     InvalidWalletType = "Invalid wallet type provided."
     InvalidChoiceOption = "Invalid value provided '%s'. Allowed options are %s."
     WalletNotFound = "The user's wallet was not found."
+    InsufficientBalance = "You don't have enough funds for this transaction."
 
 
 class OrderItExceptions:

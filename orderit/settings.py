@@ -7,7 +7,7 @@ dotenv.load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = os.environ.get('SECRET_KEY')
+SECRET_KEY = os.environ.get('SECRET_KEY', 'secret')
 
 DEBUG = True
 
@@ -23,6 +23,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'vauth',
     'wallet',
+    'orders',
     'rest_framework',
     'drf_spectacular',
     'corsheaders',
@@ -66,7 +67,7 @@ DATABASES = {
         'NAME': 'postgres',
         'USER': 'postgres',
         'PASSWORD': 'postgres',
-        'HOST': 'db',
+        # 'HOST': 'db',
         'PORT': 5432,
     }
 }
@@ -145,5 +146,5 @@ if DEBUG:
 CORS_ORIGIN_ALLOW_ALL = True
 
 
-import django_heroku
-django_heroku.settings(locals())
+# import django_heroku
+# django_heroku.settings(locals())

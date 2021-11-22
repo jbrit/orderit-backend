@@ -11,4 +11,6 @@ urlpatterns = [
     path('api/auth/', include('vauth.urls')),
     # Wallet Views
     path('api/wallet/', include('wallet.urls')),
+    # Orders Views
+    path('api/orders/', include('orders.urls')),
 ]

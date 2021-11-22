@@ -1,3 +1,4 @@
+from django.db.models.query_utils import Q
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
@@ -36,7 +37,21 @@ class WalletDetailView(GenericAPIView):
 class TransactionsListView(ListAPIView):
     serializer_class = TransactionSerializer
     queryset = TransactionSerializer.Meta.model.objects.all()
-    permission_classes = [IsAdminUser]
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request):
+        if request.user.is_superuser:
+            data = TransactionSerializer(self.get_queryset(), many=True).data
+            return Response(data)
+
+        wallet = request.user.wallet_set.first()
+        data = TransactionSerializer(
+            TransactionSerializer.Meta.model.objects.filter(
+                Q(source=wallet) or Q(destination=wallet)
+            ),
+            many=True,
+        ).data
+        return Response(data)
 
 
 class PaystackCallbackView(APIView):
