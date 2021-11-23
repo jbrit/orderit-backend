@@ -33,8 +33,8 @@ def verify_payment(request, reference, transaction_type="EW"):
         payment_entity.save()
         transaction = Transaction(
             transaction_type=transaction_type,
-            source=wallet,
-            destination=payment_entity,
+            source=payment_entity,
+            destination=wallet,
             user=wallet.user,
             amount=r["data"]["amount"] / 100,
             total_amount=r["data"]["amount"] / 100,
