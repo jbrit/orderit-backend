@@ -21,43 +21,51 @@ def verify_payment(request, reference, transaction_type="EW"):
     headers = {
         "Authorization": "Bearer " + PAYSTACK_SECRET_KEY,
     }
-
-    response = requests.request("GET", url, headers=headers)
-    if response.status_code == 200:
-        r = response.json()
-        print(json.dumps(r, indent=2))
-        payment_entity = PaymentEntity(
-            metadata=r["data"]["customer"],
-            description="From Paystack Inline",
-        )
-        payment_entity.save()
-        transaction = Transaction(
-            transaction_type=transaction_type,
-            source=payment_entity,
-            destination=wallet,
-            user=wallet.user,
-            amount=r["data"]["amount"] / 100,
-            total_amount=r["data"]["amount"] / 100,
-            status=r["data"]["status"],
-            api_id=r["data"]["id"],
-            reference=r["data"]["reference"],
-        )
-
-        if r["data"]["status"] == "success":
-            transaction.paid_at = datetime.fromisoformat(
-                r["data"]["paid_at"][:-1] + "+00:00"
+    try:
+        response = requests.request("GET", url, headers=headers)
+        if response.status_code == 200:
+            r = response.json()
+            print(json.dumps(r, indent=2))
+            payment_entity = PaymentEntity(
+                metadata=r["data"]["customer"],
+                description="From Paystack Inline",
             )
-            result = (
-                "Payment Accepted, Your wallet has been funded.",
-                status.HTTP_200_OK,
+            payment_entity.save()
+            transaction = Transaction(
+                transaction_type=transaction_type,
+                source=payment_entity,
+                destination=wallet,
+                user=request.user,
+                amount=r["data"]["amount"] / 100,
+                total_amount=r["data"]["amount"] / 100,
+                status=r["data"]["status"],
+                api_id=r["data"]["id"],
+                reference=r["data"]["reference"],
             )
+
+            if r["data"]["status"] == "success":
+                transaction.paid_at = datetime.fromisoformat(
+                    r["data"]["paid_at"][:-1] + "+00:00"
+                )
+                result = (
+                    "Payment Accepted, Your wallet has been funded.",
+                    status.HTTP_200_OK,
+                )
+            else:
+                result = "Payment was abandoned", status.HTTP_200_OK, transaction
+            try:
+                transaction.save()
+            except:
+                print("Transaction already exists")
         else:
-            result = "Payment was abandoned", status.HTTP_200_OK, transaction
-        try:
-            transaction.save()
-        except:
-            print("Transaction already exists")
-    else:
+            result = (
+                """
+                Payment could not be proccessed at this time, 
+                but don't worry we would handle it and inform you about it later
+                """,
+                status.HTTP_503_SERVICE_UNAVAILABLE,
+            )
+    except:
         result = (
             """
             Payment could not be proccessed at this time, 
@@ -65,6 +73,7 @@ def verify_payment(request, reference, transaction_type="EW"):
             """,
             status.HTTP_503_SERVICE_UNAVAILABLE,
         )
+
     return result
 
 
