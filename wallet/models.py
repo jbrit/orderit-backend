@@ -53,6 +53,8 @@ class PaymentEntity(models.Model):
 class Wallet(PaymentEntity):
     user = models.ForeignKey(User, on_delete=models.PROTECT)
 
+    def __str__(self):
+        return f"{self.user.email}'s Wallet"
 
     def get_outbound_transactions(self):
         """

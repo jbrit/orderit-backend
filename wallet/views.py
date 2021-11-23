@@ -59,10 +59,10 @@ class TransactionsListView(ListAPIView):
 
         wallet = request.user.wallet_set.first()
         data = TransactionSerializer(
-            # TransactionSerializer.Meta.model.objects.filter(
-            #     Q(source=wallet) or Q(destination=wallet) or Q(user=request.user)
-            # ),
-            request.user.transaction_set.all(),
+            TransactionSerializer.Meta.model.objects.filter(
+                Q(source=wallet) | Q(destination=wallet) | Q(user=request.user)
+            ),
+            # request.user.transaction_set.all(),
             many=True,
         ).data
         return Response(data)
