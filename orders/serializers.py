@@ -1,3 +1,5 @@
+from utilities.transaction import create_ref_code
+from wallet.models import PaymentEntity, Transaction
 from rest_framework import serializers
 from rest_framework.exceptions import NotFound
 
@@ -74,32 +76,62 @@ class OrderItemSerializer(serializers.ModelSerializer):
 
 class MakeOrderSerializer(serializers.Serializer):
     meal_id = serializers.CharField()
+    meal_quantity = serializers.IntegerField(default=1)
     item_id = serializers.CharField(required=False)
-    reference = serializers.CharField()
+    item_quantity = serializers.IntegerField(default=1)
 
     def create(self, validated_data):
         request = self.context.get("request")
         user = request.user
         meal_id = validated_data.get("meal_id")
+        item_quantity = validated_data.get("item_quantity")
+        meal_quantity = validated_data.get("meal_quantity")
         item_id = validated_data.get("item_id")
-        reference = validated_data.get("reference")
+
         order_item = OrderItem()
         try:
             if meal_id:
                 meal = Meal.objects.get(id=meal_id)
                 order_item.meal = meal
+                order_item.quantity = meal_quantity
             if item_id:
                 item = Item.objects.get(id=item_id)
                 order_item.item = item
+                order_item.quantity = item_quantity
         except:
             raise NotFound()
-        message, status, transaction = verify_payment(request, reference, "WO")
-        if status == 200:
-            order = Order(user=user, transaction=transaction)
-            order.save()
-            order_item.order = order_item.save()
-            message = "Payment successful, your order has been made."
-            return message, status, order
-        else:
-            return message, status, None
+        
+
+        order = Order(user=user)
+        order.save()
+        
+        payment_entity = PaymentEntity(
+            metadata={
+                "user_id": user.id,
+                "order_id": order.id,
+            },
+            description="Order for {}".format(user.email),
+        )
+        payment_entity.save()
+
+        transaction = Transaction(
+            user=user,
+            transaction_type="WO",
+            source=user.wallet,
+            destination=payment_entity,
+            amount=order.total_order_price,
+            total_amount=order.total_order_price,
+            status="success",
+            reference=create_ref_code(),
+        )
+        transaction.save()
+
+        order.transaction = transaction
+        order.save()
+
+        order_item.order = order
+        order_item.save()
+        message = "Payment successful, your order has been made."
+        return message, order
+        
         #TODO Implement stock system

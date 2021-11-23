@@ -33,6 +33,8 @@ def verify_payment(request, reference, transaction_type="EW"):
         payment_entity.save()
         transaction = Transaction(
             transaction_type=transaction_type,
+            source=wallet,
+            destination=payment_entity,
             user=wallet.user,
             amount=r["data"]["amount"] / 100,
             total_amount=r["data"]["amount"] / 100,
@@ -40,12 +42,6 @@ def verify_payment(request, reference, transaction_type="EW"):
             api_id=r["data"]["id"],
             reference=r["data"]["reference"],
         )
-        if transaction_type == "EW":
-            transaction.source=payment_entity,
-            transaction.destination=wallet,
-        if transaction_type == "WO":
-            transaction.destination=payment_entity,
-            transaction.source=wallet,
 
         if r["data"]["status"] == "success":
             transaction.paid_at = datetime.fromisoformat(
