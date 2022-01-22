@@ -4,7 +4,6 @@ from django.utils.translation import gettext_lazy as _
 from django.utils import timezone
 from django.db.models.signals import post_save
 from django.dispatch import receiver
-
 # Create your models here.
 class UserManager(BaseUserManager):
     """Define a model manager for User model with no username field."""
@@ -58,4 +57,3 @@ class Profile(models.Model):
 def update_user_profile(sender, instance, created, **kwargs):
     if created:
         Profile.objects.create(user=instance)
-    instance.profile.save()

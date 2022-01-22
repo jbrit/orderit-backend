@@ -6,3 +6,10 @@ gunicorn==20.1.0
 psycopg2-binary==2.9.1
 python-dotenv==0.18.0
 six==1.16.0
+requests==2.26.0
+django-heroku
+django-cors-headers
+django-cleanup
+django-storages
+boto3
+Pillow
