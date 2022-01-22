@@ -1,11 +1,14 @@
-from utilities.transaction import create_ref_code
-from wallet.models import PaymentEntity, Transaction
+from rest_framework.exceptions import ValidationError
+from utilities.constants import CANCEL_FEE_PERCENT, Actions
 from rest_framework import serializers
-from rest_framework.exceptions import NotFound
 
+from utilities.transaction import create_ref_code
+from utilities.exceptions import BadRequestError, NotFoundError
 # from utilities.constants import ErrorMessages
-from orders.models import Item, Meal, Order, OrderItem
 from utilities.paystack import verify_payment
+
+from wallet.models import PaymentEntity, Transaction
+from orders.models import Item, Meal, Order, OrderItem
 
 
 class ItemSerializer(serializers.ModelSerializer):
@@ -40,9 +43,11 @@ class MealSerializer(serializers.ModelSerializer):
 
 class OrderSerializer(serializers.ModelSerializer):
     paid = serializers.SerializerMethodField()
+    reference = serializers.SerializerMethodField()
     order = serializers.SerializerMethodField()
     total_order_price = serializers.SerializerMethodField()
-
+    vendor = serializers.SerializerMethodField()
+    status = serializers.SerializerMethodField()
     class Meta:
         model = Order
         fields = "__all__"
@@ -50,11 +55,22 @@ class OrderSerializer(serializers.ModelSerializer):
     def get_paid(self, obj):
         return obj.paid
 
+    def get_reference(self, obj):
+        return obj.reference
+
     def get_order(self, obj):
         return OrderItemSerializer(obj.orderitem_set.all(), many=True).data
 
     def get_total_order_price(self, obj):
-        return obj.total_order_price["ordered_price__sum"]
+        return obj.total_order_price
+    
+    def get_vendor(self, obj):
+        if not obj.vendor:
+            return None
+        return obj.vendor.get_full_name()
+    
+    def get_status(self, obj):
+        return obj.get_status_display()
 
 
 class OrderItemSerializer(serializers.ModelSerializer):
@@ -71,40 +87,64 @@ class OrderItemSerializer(serializers.ModelSerializer):
         return ItemSerializer(obj.item).data
 
     def get_meal(self, obj):
+        if not obj.meal:
+            return None
         return MealSerializer(obj.meal).data
 
 
 class MakeOrderSerializer(serializers.Serializer):
-    meal_id = serializers.CharField()
-    meal_quantity = serializers.IntegerField(default=1)
-    item_id = serializers.CharField(required=False)
-    item_quantity = serializers.IntegerField(default=1)
+    meals = serializers.CharField(required=False)
+    items = serializers.CharField(required=False)
+    meal_quantities = serializers.CharField(default="")
+    item_quantities = serializers.CharField(default="")
 
     def create(self, validated_data):
         request = self.context.get("request")
         user = request.user
-        meal_id = validated_data.get("meal_id")
-        item_quantity = validated_data.get("item_quantity")
-        meal_quantity = validated_data.get("meal_quantity")
-        item_id = validated_data.get("item_id")
 
-        order_item = OrderItem()
+
+        item_quantities = validated_data.get("item_quantities")
+        meal_quantities = validated_data.get("meal_quantities")
+
+        items = validated_data.get("items")
+        meals = validated_data.get("meals")
+
+        items = items.split(",") if items else ""
+        meals = meals.split(",") if meals else ""
+
         try:
-            if meal_id:
-                meal = Meal.objects.get(id=meal_id)
-                order_item.meal = meal
-                order_item.quantity = meal_quantity
-            if item_id:
-                item = Item.objects.get(id=item_id)
-                order_item.item = item
-                order_item.quantity = item_quantity
-        except:
-            raise NotFound()
-        
+            item_quantities = item_quantities.split(",") if item_quantities else ""
+            meal_quantities = meal_quantities.split(",") if meal_quantities else ""
 
-        order = Order(user=user)
-        order.save()
+            # order_item = OrderItem()
+            order = Order(user=user, status="P")
+            order.save()
+
+            if len(items) > 0:
+                for item in items:
+                    _item = OrderItem(item_id=int(item))
+                    if _item.item.stock > 0:
+                        _item.quantity = item_quantities[items.index(item)] if item_quantities else 1
+                        _item.ordered_price = _item.item.price
+                        _item.order = order
+                        _item.save()
+                        _item.item.stock -= 1
+                        _item.item.save()
+
+
+                    print("first")
+            
+            if len(meals) > 0:
+                for meal in meals:
+                    _item = OrderItem(meal_id=int(meal))
+                    _item.quantity = meal_quantities[items.index(meal)] if meal_quantities else 1
+                    _item.ordered_price = _item.meal.total_price
+                    _item.order = order
+                    _item.save()
         
+        except:
+            raise BadRequestError("Invalid data")
+
         payment_entity = PaymentEntity(
             metadata={
                 "user_id": user.id,
@@ -117,7 +157,7 @@ class MakeOrderSerializer(serializers.Serializer):
         transaction = Transaction(
             user=user,
             transaction_type="WO",
-            source=user.wallet,
+            source=user.wallet_set.first(),
             destination=payment_entity,
             amount=order.total_order_price,
             total_amount=order.total_order_price,
@@ -129,9 +169,69 @@ class MakeOrderSerializer(serializers.Serializer):
         order.transaction = transaction
         order.save()
 
-        order_item.order = order
-        order_item.save()
+        if user.wallet_set.first().balance < order.total_order_price:
+            transaction.delete()
+            payment_entity.delete()
+            order.delete()
+
+            raise serializers.ValidationError(
+                "Insufficient balance in your wallet. Please top up your wallet"
+            )
+
+        order = OrderSerializer(order).data
+
         message = "Payment successful, your order has been made."
         return message, order
+
+        # TODO Implement stock system for meals without nested loops, print order
+
+class UpdateOrderSerializer(serializers.Serializer):
+    order_id = serializers.IntegerField()
+
+    def create(self, validated_data):
+        request = self.context.get("request")
+        action = self.context.get("action")
+        user = request.user
+
+        try:
+            order = Order.objects.get(id=validated_data.get("order_id"), status="P")
+            if action == Actions.Cancel:
+
+                if user.is_superuser and user != order.user:
+                    order.vendor = user
+                    order.status = "AR"
+
+                else:
+                    order.status ="UR"
+                    payment_entity = PaymentEntity(
+                        metadata={
+                            "user_id": user.id,
+                            "order_id": order.id,
+                        },
+                        description="Cancel Order for {}".format(user.email),
+                    )
+                    payment_entity.save()
+
+                    transaction = Transaction(
+                        user=user,
+                        transaction_type="WE",
+                        source=user.wallet_set.first(),
+                        destination=payment_entity,
+                        amount=(order.total_order_price * CANCEL_FEE_PERCENT),
+                        total_amount=(order.total_order_price * CANCEL_FEE_PERCENT),
+                        status="success",
+                        reference=create_ref_code(),
+                    )
+                    transaction.save()
+                    
+            elif action == Actions.Serve:
+                order.status = "S"
+            else:
+                raise ValidationError("Invalid action")
+            order.save()
+            return validated_data
+        except:
+            raise NotFoundError("Order not found")
+
+
         
-        #TODO Implement stock system

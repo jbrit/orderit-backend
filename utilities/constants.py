@@ -2,7 +2,7 @@ TRANSACTION_TYPES = (
     ("EW", "External to Wallet"),
     ("WE", "Wallet to External"),
     ("WW", "Wallet to Wallet"),
-    ("WO", "Wallet to Order")
+    ("WO", "Wallet to Order"),
 )
 
 CATEGORIES = (
@@ -10,14 +10,23 @@ CATEGORIES = (
     ("D", "Drinks and Beverages"),
     ("G", "Garnish"),
     ("M", "Main Dish"),
-    ("F", "Fruits")
+    ("F", "Fruits"),
 )
 
 STATUSES = (
     ("P", "Pending"),
     ("A", "Accepted"),
-    ("S", "Served")
+    ("UR", "UserRejected"),
+    ("AR", "AdminRejected"),
+    ("S", "Served"),
 )
+
+CANCEL_FEE_PERCENT = 0.2
+
+class Actions:
+    Cancel = "Cancel"
+    Serve = "Serve"
+
 
 class ErrorMessages:
     """

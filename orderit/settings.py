@@ -145,6 +145,11 @@ if DEBUG:
 
 CORS_ORIGIN_ALLOW_ALL = True
 
+# from datetime import timedelta
+
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
+# }
 
 import django_heroku
 django_heroku.settings(locals())

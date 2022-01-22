@@ -135,6 +135,8 @@ class UserSerializer(serializers.ModelSerializer):
             "email", 
             "first_name", 
             "last_name", 
+            "is_superuser",
+            "is_staff",
             "wallet"
         ]
     def get_wallet(self, obj):
