@@ -9,6 +9,17 @@ class OrderItemTabularInline(admin.TabularInline):
 
 
 class OrderAdmin(admin.ModelAdmin):
+    list_display = [
+        "user",
+        "reference",
+        "status",
+        "vendor",
+        "timestamp",
+    ]
+    # search_fields = [
+    #     "transaction__reference",
+    #     "user"
+    # ]
     inlines = [OrderItemTabularInline]
 
 

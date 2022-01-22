@@ -183,7 +183,6 @@ class MakeOrderSerializer(serializers.Serializer):
         message = "Payment successful, your order has been made."
         return message, order
 
-        # TODO Implement stock system for meals without nested loops, print order
 
 class UpdateOrderSerializer(serializers.Serializer):
     order_id = serializers.IntegerField()

@@ -54,7 +54,9 @@ class Order(models.Model):
     timestamp = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
-        return f"{self.user.email} - {self.transaction.reference}"
+        if self.transaction:
+            return f"{self.user.email} - {self.transaction.reference}"
+        return self.user.email
 
     @property
     def reference(self):
