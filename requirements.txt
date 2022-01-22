@@ -9,3 +9,7 @@ six==1.16.0
 requests==2.26.0
 django-heroku
 django-cors-headers
+django-cleanup
+django-storages
+boto3
+Pillow

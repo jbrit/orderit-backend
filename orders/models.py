@@ -7,6 +7,7 @@ from wallet.models import Transaction
 # Create your models here.
 class Item(models.Model):
     name = models.CharField(max_length=100)
+    image = models.ImageField(upload_to="items", null=True)
     price = models.FloatField()
     category = models.CharField(max_length=2, choices=CATEGORIES)
     stock = models.IntegerField()
@@ -18,8 +19,12 @@ class Item(models.Model):
 
 class Meal(models.Model):
     name = models.CharField(max_length=100)
+    images = models.ImageField(upload_to="meals", null=True)
     category = models.CharField(max_length=2, choices=CATEGORIES)
     items = models.ManyToManyField(Item)
+
+    def __str__(self):
+        return self.name
 
     @property
     def total_price(self):
@@ -32,7 +37,12 @@ class Order(models.Model):
         Transaction, on_delete=models.PROTECT, null=True, blank=True
     )
     status = models.CharField(max_length=2, choices=STATUSES, default="P")
-    vendor = models.ForeignKey(User, on_delete=models.PROTECT, null=True, related_name="vendor")
+    vendor = models.ForeignKey(
+        User, on_delete=models.PROTECT, null=True, related_name="vendor"
+    )
+
+    def __str__(self):
+        return self.user.email
 
     @property
     def reference(self):
@@ -55,3 +65,12 @@ class OrderItem(models.Model):
     order = models.ForeignKey(Order, on_delete=models.PROTECT, null=True, blank=True)
     ordered_price = models.FloatField()
     quantity = models.IntegerField(default=1)
+
+
+    def __str__(self):
+        if self.meal:
+            return f"{self.meal.name} - {self.order.user.email}"
+        elif self.item:
+            return f"{self.item.name} - {self.order.user.email}"
+        else:
+            return self.order.user.email
