@@ -51,7 +51,7 @@ class Order(models.Model):
     )
 
     def __str__(self):
-        return self.user.email
+        return f"{self.user.email} - {self.transaction.reference}"
 
     @property
     def reference(self):
