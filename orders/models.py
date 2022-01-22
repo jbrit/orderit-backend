@@ -13,6 +13,7 @@ class Item(models.Model):
     category = models.CharField(max_length=2, choices=CATEGORIES)
     stock = models.IntegerField()
     available = models.BooleanField(default=True)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
@@ -27,6 +28,7 @@ class Meal(models.Model):
     image = models.ImageField(upload_to="meals", null=True)
     category = models.CharField(max_length=2, choices=CATEGORIES)
     items = models.ManyToManyField(Item)
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return self.name
@@ -49,6 +51,7 @@ class Order(models.Model):
     vendor = models.ForeignKey(
         User, on_delete=models.PROTECT, null=True, related_name="vendor"
     )
+    timestamp = models.DateTimeField(auto_now_add=True, null=True)
 
     def __str__(self):
         return f"{self.user.email} - {self.transaction.reference}"
