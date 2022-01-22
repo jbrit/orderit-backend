@@ -7,6 +7,7 @@ TRANSACTION_TYPES = (
 
 CATEGORIES = (
     ("S", "Swallow"),
+    ("SN", "Snacks"),
     ("D", "Drinks and Beverages"),
     ("G", "Garnish"),
     ("M", "Main Dish"),

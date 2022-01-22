@@ -1,6 +1,7 @@
 from django.db import models
 
 from utilities.constants import CATEGORIES, STATUSES
+from utilities.images import image_resize
 from vauth.models import User
 from wallet.models import Transaction
 
@@ -15,16 +16,24 @@ class Item(models.Model):
 
     def __str__(self):
         return self.name
+    
+    def save(self, *args, **kwargs):
+        image_resize(self.image, 1000,1000)
+        super().save(*args, **kwargs)
 
 
 class Meal(models.Model):
     name = models.CharField(max_length=100)
-    images = models.ImageField(upload_to="meals", null=True)
+    image = models.ImageField(upload_to="meals", null=True)
     category = models.CharField(max_length=2, choices=CATEGORIES)
     items = models.ManyToManyField(Item)
 
     def __str__(self):
         return self.name
+
+    def save(self, *args, **kwargs):
+        image_resize(self.image, 1000,1000)
+        super().save(*args, **kwargs)
 
     @property
     def total_price(self):
