@@ -2,7 +2,7 @@ from utilities.constants import Actions
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView
+from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
 from rest_framework.response import Response
 
 from orders.serializers import (
@@ -23,6 +23,10 @@ class ItemListView(ListAPIView):
     permission_classes = []
     queryset = ItemSerializer.Meta.model.objects.all()
 
+class ItemUpdateView(RetrieveUpdateAPIView):
+    serializer_class = ItemSerializer
+    permission_classes = [IsAdminUser]
+    queryset = ItemSerializer.Meta.model.objects.all()
 
 class MealListView(ListAPIView):
     """
