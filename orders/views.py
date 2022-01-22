@@ -2,7 +2,13 @@ from utilities.constants import Actions
 from rest_framework import status
 from rest_framework.views import APIView
 from rest_framework.permissions import IsAdminUser, IsAuthenticated
-from rest_framework.generics import GenericAPIView, ListAPIView, RetrieveAPIView, RetrieveUpdateAPIView
+from rest_framework.generics import (
+    GenericAPIView,
+    ListAPIView,
+    RetrieveAPIView,
+    RetrieveUpdateAPIView,
+    CreateAPIView,
+)
 from rest_framework.response import Response
 
 from orders.serializers import (
@@ -23,10 +29,26 @@ class ItemListView(ListAPIView):
     permission_classes = []
     queryset = ItemSerializer.Meta.model.objects.all()
 
-class ItemUpdateView(RetrieveUpdateAPIView):
+
+class ItemCreateView(CreateAPIView):
+    """
+    Creates an item.
+    """
+
     serializer_class = ItemSerializer
     permission_classes = [IsAdminUser]
     queryset = ItemSerializer.Meta.model.objects.all()
+
+
+class ItemRetrieveUpdateView(RetrieveUpdateAPIView):
+    """
+    Updates an item, especially for stock and available fields.
+    """
+
+    serializer_class = ItemSerializer
+    permission_classes = [IsAdminUser]
+    queryset = ItemSerializer.Meta.model.objects.all()
+
 
 class MealListView(ListAPIView):
     """
@@ -36,6 +58,25 @@ class MealListView(ListAPIView):
 
     serializer_class = MealSerializer
     permission_classes = []
+    queryset = MealSerializer.Meta.model.objects.all()
+
+
+class MealCreateView(CreateAPIView):
+    """
+    Creates a meal.
+    """
+
+    serializer_class = MealSerializer
+    permission_classes = [IsAdminUser]
+    queryset = MealSerializer.Meta.model.objects.all()
+
+class MealRetrieveUpdateView(RetrieveUpdateAPIView):
+    """
+    Updates a meal.
+    """
+
+    serializer_class = MealSerializer
+    permission_classes = [IsAdminUser]
     queryset = MealSerializer.Meta.model.objects.all()
 
 
