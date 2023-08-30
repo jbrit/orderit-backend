@@ -1,4 +1,4 @@
-from django.utils.encoding import force_text
+from django.utils.encoding import force_str
 from django.utils.http import urlsafe_base64_decode
 from django.contrib.auth.forms import PasswordResetForm, SetPasswordForm
 from rest_framework import serializers
@@ -106,7 +106,7 @@ class PasswordResetConfirmSerializer(serializers.Serializer):
     def validate(self, attrs):
         # Decode the uidb64 to uid to get User object
         try:
-            uid = force_text(urlsafe_base64_decode(attrs["uid"]))
+            uid = force_str(urlsafe_base64_decode(attrs["uid"]))
             self.user = User.objects.get(pk=uid)
         except (TypeError, ValueError, OverflowError, User.DoesNotExist):
             raise serializers.ValidationError({"uid": ["Invalid value"]})
