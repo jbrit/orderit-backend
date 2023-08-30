@@ -7,7 +7,7 @@ dotenv.load_dotenv()
 BASE_DIR = Path(__file__).resolve().parent.parent
 
 
-SECRET_KEY = 'django-insecure-qlngzhdk=+5vf8htpwq8a^o*f05de2^8x04b14!yzs+yp2y8kg'
+SECRET_KEY = os.environ.get('SECRET_KEY', 'secret')
 
 DEBUG = True
 
@@ -22,11 +22,16 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'vauth',
+    'wallet',
+    'orders',
     'rest_framework',
     'drf_spectacular',
+    'corsheaders',
+    'django_cleanup.apps.CleanupConfig',
 ]
 
 MIDDLEWARE = [
+    'corsheaders.middleware.CorsMiddleware',
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -57,14 +62,22 @@ TEMPLATES = [
 WSGI_APPLICATION = 'orderit.wsgi.application'
 
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.postgresql',
+#         'NAME': 'postgres',
+#         'USER': 'postgres',
+#         'PASSWORD': 'postgres',
+#         # 'HOST': 'db',
+#         'PORT': 5432,
+#     }
+# }
+
+
 DATABASES = {
-    'default': {
-        'ENGINE': 'django.db.backends.postgresql',
-        'NAME': 'postgres',
-        'USER': 'postgres',
-        'PASSWORD': 'postgres',
-        'HOST': 'db',
-        'PORT': 5432,
+    "default": {
+        "ENGINE" : "django.db.backends.sqlite3",
+        "NAME": os.path.join(BASE_DIR, "db.sqlite3")
     }
 }
 
@@ -96,6 +109,10 @@ USE_L10N = True
 USE_TZ = True
 
 STATIC_URL = '/static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+
+MEDIA_URL = '/media/blog/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
@@ -103,13 +120,13 @@ AUTH_USER_MODEL = "vauth.User"
 
 REST_FRAMEWORK = {
     'DEFAULT_PERMISSION_CLASSES': [
-        'rest_framework.permissions.DjangoModelPermissionsOrAnonReadOnly'
+        'rest_framework.permissions.IsAuthenticated'
     ],
     'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework_simplejwt.authentication.JWTAuthentication',
     ],
-    'EXCEPTION_HANDLER': 'vauth.utils.custom_exception_handler',
+    'EXCEPTION_HANDLER': 'utilities.exception_handler.custom_exception_handler',
 }
 
 # API DOCS SETTINGS
@@ -124,7 +141,8 @@ CLIENT_APP_URL = "https://orderit-lmu.vercel.app"
 PASSWORD_RESET_URL = f"{CLIENT_APP_URL}/reset-password"
 VERIFICATION_URL = f"{CLIENT_APP_URL}/verify/"
 
-EMAIL_BACKEND = 'django.core.mail.backends.console.EmailBackend'
+
+PAYSTACK_SECRET_KEY = os.environ.get("PAYSTACK_SECRET_KEY")
 
 # Production settings
 # TODO: Manage env later
@@ -136,3 +154,26 @@ if DEBUG:
     EMAIL_HOST_PASSWORD = os.environ.get("EMAIL_HOST_PASSWORD","")
     EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
     DEFAULT_FROM_EMAIL = "'OrderIt Team' <no-reply-orderit@jbritz.tech>"
+
+CORS_ORIGIN_ALLOW_ALL = True
+
+# from datetime import timedelta
+
+# SIMPLE_JWT = {
+#     'ACCESS_TOKEN_LIFETIME': timedelta(minutes=300),
+# }
+
+AWS_ACCESS_KEY_ID = os.environ.get('AWS_ACCESS_KEY_ID')
+AWS_SECRET_ACCESS_KEY = os.environ.get('AWS_SECRET_ACCESS_KEY')
+AWS_STORAGE_BUCKET_NAME = os.environ.get('AWS_STORAGE_BUCKET_NAME')
+
+AWS_S3_REGION_NAME = os.environ.get('AWS_S3_REGION_NAME')
+AWS_S3_SIGNATURE_VERSION = os.environ.get('AWS_SIGNATURE_VERSION','s3v4')
+
+AWS_S3_FILE_OVERWRITE = False
+AWS_DEFAULT_ACL = None
+
+# DEFAULT_FILE_STORAGE = 'storages.backends.s3boto3.S3Boto3Storage'
+
+# import django_heroku
+# django_heroku.settings(locals())
